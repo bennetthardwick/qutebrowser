@@ -24,6 +24,8 @@ import functools
 import re
 import html as html_utils
 
+from os.path import expanduser
+
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QPoint, QPointF, QUrl,
                           QTimer, QObject)
 from PyQt5.QtGui import QIcon
@@ -935,6 +937,7 @@ class _WebEngineScripts(QObject):
                               world=QWebEngineScript.MainWorld)
         # FIXME:qtwebengine what about subframes=True?
         self._inject_early_js('js', js_code, subframes=True)
+        self._inject_early_js('js', self.load_user_javascript(), subframes=True)
         self._init_stylesheet()
 
         # The Greasemonkey metadata block support in QtWebEngine only starts at
@@ -947,6 +950,11 @@ class _WebEngineScripts(QObject):
             self._greasemonkey.scripts_reloaded.connect(
                 self._inject_all_greasemonkey_scripts)
             self._inject_all_greasemonkey_scripts()
+
+    def load_user_javascript(self):
+        userscript_file = ".config/qutebrowser/javascript/userscript.js"
+        home_directory = expanduser("~") + "/"
+        return open(home_directory + userscript_file, "r").read()
 
     def _init_stylesheet(self):
         """Initialize custom stylesheets.
